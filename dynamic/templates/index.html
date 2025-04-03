@@ -1,0 +1,141 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>知乎热点问题爬虫</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        .question-card {
+            margin-bottom: 15px;
+            transition: all 0.3s;
+        }
+        .question-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+        <div class="container">
+            <a class="navbar-brand" href="/">知乎热点问题爬虫</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item">
+                        <a class="nav-link active" href="/">首页</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/settings">设置</a>
+                    </li>
+                </ul>
+                <div class="d-flex">
+                    <button id="run-once-btn" class="btn btn-outline-light me-2">立即运行一次</button>
+                    {% if is_running %}
+                        <button id="stop-scraper-btn" class="btn btn-danger">停止定时任务</button>
+                    {% else %}
+                        <button id="start-scraper-btn" class="btn btn-success">启动定时任务</button>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mt-4">
+        <div class="row mb-4">
+            <div class="col-md-12">
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title">状态</h5>
+                        <p>问题总数: <strong>{{ total_count }}</strong></p>
+                        <p>调度器状态: <strong>{% if is_running %}运行中{% else %}已停止{% endif %}</strong></p>
+                        <p>上次运行: <strong>{% if last_run %}{{ last_run.strftime('%Y-%m-%d %H:%M:%S') }}{% else %}从未运行{% endif %}</strong></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <h2 class="mb-4">热门问题</h2>
+        
+        <div class="row">
+            {% for question in questions %}
+            <div class="col-md-6">
+                <div class="card question-card">
+                    <div class="card-body">
+                        <h5 class="card-title">{{ question.title }}</h5>
+                        <h6 class="card-subtitle mb-2 text-muted">问题ID: {{ question.id }}</h6>
+                        <p class="card-text">
+                            <span class="badge bg-primary me-2">{{ question.answer_count }} 回答</span>
+                            <span class="badge bg-secondary">{{ question.follow_count }} 关注</span>
+                        </p>
+                        <a href="{{ question.url }}" class="btn btn-sm btn-outline-primary" target="_blank">在知乎查看</a>
+                        <small class="text-muted d-block mt-2">采集时间: {{ question.timestamp.strftime('%Y-%m-%d %H:%M:%S') }}</small>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        document.getElementById('run-once-btn').addEventListener('click', function() {
+            if (confirm('确定要立即运行一次爬虫吗？')) {
+                fetch('/scraper/run-once', {
+                    method: 'POST'
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        alert('爬虫运行成功，采集了 ' + data.count + ' 个问题。');
+                        location.reload();
+                    } else {
+                        alert('爬虫运行失败。');
+                    }
+                });
+            }
+        });
+        
+        {% if is_running %}
+        document.getElementById('stop-scraper-btn').addEventListener('click', function() {
+            if (confirm('确定要停止定时任务吗？')) {
+                fetch('/scraper/stop', {
+                    method: 'POST'
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        alert('定时任务已停止。');
+                        location.reload();
+                    } else {
+                        alert('停止定时任务失败。');
+                    }
+                });
+            }
+        });
+        {% else %}
+        document.getElementById('start-scraper-btn').addEventListener('click', function() {
+            if (confirm('确定要启动定时任务吗？')) {
+                fetch('/scraper/start', {
+                    method: 'POST'
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        alert('定时任务已启动。');
+                        location.reload();
+                    } else {
+                        alert('定时任务已在运行或启动失败。');
+                    }
+                });
+            }
+        });
+        {% endif %}
+    </script>
+</body>
+</html>
+            

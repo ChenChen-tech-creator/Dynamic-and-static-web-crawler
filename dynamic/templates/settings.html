@@ -1,0 +1,104 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>设置 - 知乎热点问题爬虫</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+        <div class="container">
+            <a class="navbar-brand" href="/">知乎热点问题爬虫</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav">
+                    <li class="nav-item">
+                        <a class="nav-link" href="/">首页</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link active" href="/settings">设置</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mt-4">
+        <h2 class="mb-4">系统设置</h2>
+        
+        <div class="row">
+            <div class="col-md-6">
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h5 class="card-title mb-0">爬虫设置</h5>
+                    </div>
+                    <div class="card-body">
+                        <form action="/settings/save" method="post">
+                            <div class="mb-3">
+                                <label for="scrape_interval" class="form-label">爬取间隔（分钟）</label>
+                                <input type="number" class="form-control" id="scrape_interval" name="scrape_interval" value="{{ settings.scrape_interval }}" min="1" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="question_limit" class="form-label">问题数量限制</label>
+                                <input type="number" class="form-control" id="question_limit" name="question_limit" value="{{ settings.question_limit }}" min="1" required>
+                            </div>
+                            <div class="mb-3 form-check">
+                                <input type="checkbox" class="form-check-input" id="headless" name="headless" {% if settings.headless %}checked{% endif %}>
+                                <label class="form-check-label" for="headless">无头模式运行（不显示浏览器窗口）</label>
+                            </div>
+                            <button type="submit" class="btn btn-primary">保存设置</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="card-title mb-0">Cookies 设置</h5>
+                    </div>
+                    <div class="card-body">
+                        <p class="card-text">请粘贴从知乎网站获取的 cookies 字符串，用于访问热点问题页面。</p>
+                        <form id="cookies-form">
+                            <div class="mb-3">
+                                <label for="cookies" class="form-label">Cookies</label>
+                                <textarea class="form-control" id="cookies" rows="8" placeholder="name=value; name2=value2;">{{ cookies_text }}</textarea>
+                                <div class="form-text">格式: name=value; name2=value2; ...</div>
+                            </div>
+                            <button type="button" id="save-cookies-btn" class="btn btn-primary">保存 Cookies</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        document.getElementById('save-cookies-btn').addEventListener('click', function() {
+            const cookies = document.getElementById('cookies').value;
+            
+            fetch('/settings/cookies', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                },
+                body: 'cookies=' + encodeURIComponent(cookies)
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert('Cookies 保存成功。');
+                } else {
+                    alert('Cookies 保存失败。');
+                }
+            });
+        });
+    </script>
+</body>
+</html>
+            

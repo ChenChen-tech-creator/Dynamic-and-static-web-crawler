@@ -1,0 +1,9 @@
+{
+    "cookies_file": "cookies.json",
+    "zhihu_url": "https://www.zhihu.com/question/waiting",
+    "scrape_interval": 60,
+    "question_limit": 20,
+    "database_path": "questions.db",
+    "headless": true,
+    "debug": true
+}
